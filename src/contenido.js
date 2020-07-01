@@ -21,7 +21,7 @@ function Contenido() {
 function Tickets(props) {
   //datos de tickets
   let [ticket, setTicket] = useState([]);
-  let [paquete, setPackages] = useState([]);
+  // let [paquete, setPackages] = useState([]);
   useEffect(function () {
     fetch("http://localhost:3000/tickets")
       .then(function (resultado) {
@@ -50,13 +50,13 @@ function Tickets(props) {
 
   //datos de packages
 
-  let packageJSX = paquete.map(function (paquetes) {
-    return (
-      <>
-        <h1>{paquetes.type}</h1>
-      </>
-    );
-  });
+  // let packageJSX = paquete.map(function (paquetes) {
+  //   return (
+  //     <>
+  //       <h1>{paquetes.type}</h1>
+  //     </>
+  //   );
+  // });
 
   let history = useHistory();
 
