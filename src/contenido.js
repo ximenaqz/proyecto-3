@@ -3,21 +3,25 @@ import { Route, useHistory } from "react-router-dom";
 import Swal from "sweetalert2";
 
 function Contenido() {
+  let [cantidad, setCantidad] = useState({});
+  function modificarCantidad(ticket) {
+    setCantidad(ticket);
+  }
   return (
     <>
       <Route path="/ticket">
-        <Tickets />
+        <Tickets modificarCantidad={modificarCantidad} />
       </Route>
       <Route path="/compra">
-        <Compra />
+        <Compra cantidad={cantidad} />
       </Route>
     </>
   );
 }
-function Tickets() {
+function Tickets(props) {
   //datos de tickets
   let [ticket, setTicket] = useState([]);
-  // let [package , setPackages] = useState([]);
+  let [paquete, setPackages] = useState([]);
   useEffect(function () {
     fetch("http://localhost:3000/tickets")
       .then(function (resultado) {
@@ -28,44 +32,37 @@ function Tickets() {
         setTicket(info);
       });
 
-    //  fetch("http://localhost:3000/packages").then(function(resultado) {
-    //   return resultado.json();
-    // }).then(function (packs) {
-    //   setPackages(packs);
-    //   console.log(packs);
+    // fetch("http://localhost:3000/packages")
+    //   .then(function (resultado) {
+    //     return resultado.json();
+    //   })
+    //   .then(function (packs) {
+    //     setPackages(packs);
+    //     console.log(packs);
+    //   });
   }, []);
 
   //coger numero de entradas
 
   let ticketJSX = ticket.map(function (resultado) {
-    return (
-      <>
-        <h1>{resultado.type}</h1>
-        <h2>{resultado.name}</h2>
-        <p>{resultado.price}</p>
-        <p>{resultado.cantidad}</p>
-        <button>Cantidad</button>
-        <button type="button" onClick={handleClick}>
-          Comprar
-        </button>
-      </>
-    );
+    return <Ticket resultado={resultado} handleClick={handleClick} />;
   });
 
   //datos de packages
 
-  // let packageJSX = package.map(function (paquetes) {
-  //   return (
-  //     <>
-  //     <h1>{paquetes.type}</h1>
-  //     </>
-  //   )
-
-  // })
+  let packageJSX = paquete.map(function (paquetes) {
+    return (
+      <>
+        <h1>{paquetes.type}</h1>
+      </>
+    );
+  });
 
   let history = useHistory();
 
-  function handleClick() {
+  function handleClick(ticket) {
+    props.modificarCantidad(ticket);
+
     history.push("/compra");
   }
 
@@ -77,8 +74,50 @@ function Tickets() {
     </>
   );
 }
+function Ticket(props) {
 
-function Compra() {
+
+
+  function handleClick() {
+  let tickectNuevo = props.resultado
+  tickectNuevo.cantidad = producto
+
+    props.handleClick(tickectNuevo);
+
+
+  }
+  let cantidadJSX;
+  if(props.resultado.cantidad === 0){
+    cantidadJSX ="sold out"
+  }else{
+    cantidadJSX = props.resultado.cantidad;
+  }
+ let [producto , setProducto] = useState(0)
+  function insertarCantidad() {
+    if (producto === props.resultado.cantidad) {
+      setProducto(props.resultado.cantidad)
+    } else{
+      setProducto(producto +1);
+
+   }
+
+  }
+  
+  return (
+    <>
+      <h1>{props.resultado.type}</h1>
+      <h2>{props.resultado.name}</h2>
+      <p>{props.resultado.price}</p>
+      <p>{cantidadJSX}</p>
+      <p>{producto}</p>
+      <button onClick={insertarCantidad}>Cantidad</button>
+      <button type="button" onClick={handleClick}>
+        Comprar
+      </button>
+    </>
+  );
+}
+function Compra(props) {
   let [nombre, setNombre] = useState("");
   let [apellido, setApellido] = useState("");
   let [email, setEmail] = useState("");
@@ -151,12 +190,26 @@ function Compra() {
       })
       .then(function (datos) {
         console.log(datos);
-        Swal.fire({
-          title: "Gracias por tu compra",
-          text: "You clicked the button!",
-          icon: "success",
-          button: "Aww yiss!",
-        });
+       
+        fetch('http://localhost:3000/compratickect' , {
+          method : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(props.cantidad),
+        })
+          .then(function (resultado) {
+            console.log(resultado);
+            return resultado.json();
+          })
+          .then(function (datos) {
+            console.log(datos);
+            Swal.fire({
+              title: "Gracias por tu compra",
+              text: "You clicked the button!",
+              icon: "success",
+              button: "Aww yiss!",
+            });
+        })
+
       });
   }
   return (
@@ -186,6 +239,8 @@ function Compra() {
       <input onChange={direccionPersona} placeholder="Calle y portal" />
 
       <button onClick={enviarDatos}>Pago</button>
+      <h1>{props.cantidad.price}</h1>
+      <p>{props.cantidad.cantidad}</p>
     </>
   );
 }
